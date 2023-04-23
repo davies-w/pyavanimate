@@ -33,7 +33,7 @@ setup(
         author='Winton Davies',
         author_email='wdavies@cs.stanford.edu',
         license='Apache License 2.0',
-        install_requires=["numpy"],
+        install_requires=["moviepy", "matplotlib", "numpy", "IPython", "PIL", "io", "math"],
         packages=['pyavanimate'],
         zip_safe=True
     )
