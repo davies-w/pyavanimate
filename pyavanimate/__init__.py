@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pyavanimate.pyavanimate import animate
+from pyavanimate.pyavanimate import test_slow_song
+from pyavanimate.pyavanimate import test_fast_song
