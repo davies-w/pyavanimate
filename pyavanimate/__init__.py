@@ -20,6 +20,10 @@ from pyavanimate.pyavanimate import test_fast_two_part_song
 from pyavanimate.pyavanimate import test_interactive
 from pyavanimate.pyavanimate import test_interactive_two_part_song
 
+from pyavanimate.pyavanimate import make_test_song
+
 from pyavanimate.pyavanimate import display_animation_fast
 from pyavanimate.pyavanimate import display_animation_slow
 from pyavanimate.pyavanimate import make_ipywidget_player
+
+
