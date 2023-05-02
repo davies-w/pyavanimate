@@ -5,6 +5,9 @@ Guarantees no out of sync audio by quickly rendering as an MPEG4 video.
 Time to render 30 FPS, 0.25 second viewport over a 7 second clip is 
 approximately 2-3 seconds.
 
+Now allows multiple tracks to be animated in the same video, and 
+added a Jupyter Widget controller for longer audio track seeking.
+
 ```
 #pip install --upgrade --no-deps --force-reinstall --quiet 'git+https://github.com/davies-w/pyavanimate.git'
 
