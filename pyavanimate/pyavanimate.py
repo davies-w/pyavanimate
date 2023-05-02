@@ -28,7 +28,7 @@ import time
 from ipywidgets import interactive,  widgets, HBox, VBox, Layout
 import traceback
 import functools
-
+import copy
 
 def showarray(a, fmt='png'):
     f = BytesIO()
@@ -129,7 +129,7 @@ def display_animation_slow(song_amp_aac, song_duration, song_rate, fps, time_win
  
   # *Have to* have FPS **and** Duration Array both set.
   animation = ImageSequenceClip(frames, fps=fps, durations=[1.0/fps]*total_num_frames)
-  song_amp = song_amp_aac.pop()
+  song_amp = song_amp_aac.pop().deepcopy()
   for amp in song_amp_aac:
     song_amp += amp
   animation.audio = AudioArrayClip(song_amp, song_rate)
@@ -195,7 +195,7 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   #print(f"framemaking {(time.time() - start_time) } seconds.")
   animation = ImageSequenceClip(frames, fps=fps, durations=[1.0/fps]*len(frames))
   #print(f"animation making {(time.time() - start_time) } seconds.")
-  song_amp = song_amp_aac.pop()
+  song_amp = song_amp_aac.pop().deepcopy()
   for amp in song_amp_aac:
     song_amp += amp
 
