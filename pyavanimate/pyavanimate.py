@@ -261,7 +261,7 @@ def animate_music(resolution, clip_length, seek, stereo_song_amp_aac, song_rate,
 
 
 def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration, 
-                          lip_length=5.0, resolution=0.25, max_resolution=1.0, seek_init_value=0.0, height_scale=1.0):
+                          clip_length=5.0, resolution=0.25, max_resolution=1.0, seek_init_value=0.0, height_scale=1.0):
 
   resolution_w = widgets.FloatSlider(min=0.05, max=max_resolution, step=max_resolution/20, value=resolution, description='Resolution:', continuous_update=False)
   clip_length_w = widgets.FloatSlider(min=1.0, max=song_duration, step=resolution, value=clip_length, description='Clip Length:', continuous_update=False)
