@@ -154,14 +154,18 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
             # thus 0 is close to the +1.0 image, and 120 or so is close to -1.0
   max_x =-1
   x_search_limit = 100
+
+  front_x = 10
   for x in range(0, x_search_limit, 1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
       front_x = x + 1
-
+      print(front_x)
+      
+  back_x = -10
   for x in range(max_x, (max_x - x_search_limit), -1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
       back_x = x - 1
-
+      print(back_x)
   front = im[:, 0:front_x, :]
   #print(f"front_x {front_x},{front.shape[1]}")
   back  = im[:, back_x:-1, :]
@@ -245,22 +249,23 @@ def make_test_song(freq_coef=1.0, amp_coef=1.0, time_per_note=1.0):
   return stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration
 
 
-def animate_music(resolution, clip_length, seek, stereo_song_amp_aac, song_rate):
+def animate_music(resolution, clip_length, seek, stereo_song_amp_aac, song_rate, height_scale):
     s = []
     for track in stereo_song_amp_aac:
       s.append(track[round(seek*song_rate):round((seek + clip_length)*song_rate),:])
     try:
-      display_animation_fast(s, song_rate, view_window_secs=resolution, start_time_offset=seek, autoplay=True)
+      display_animation_fast(s, song_rate, view_window_secs=resolution, start_time_offset=seek, autoplay=True, height=2*height_scale)
     except:
       traceback.print_exc()
     return None
 
 
-def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration, clip_length=5.0, resolution=0.25, max_resolution=1.0):
+def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration, 
+                          lip_length=5.0, resolution=0.25, max_resolution=1.0, seek_init_value=0.0, height_scale=1.0):
 
   resolution_w = widgets.FloatSlider(min=0.05, max=max_resolution, step=max_resolution/20, value=resolution, description='Resolution:', continuous_update=False)
   clip_length_w = widgets.FloatSlider(min=1.0, max=song_duration, step=resolution, value=clip_length, description='Clip Length:', continuous_update=False)
-  seek_w = widgets.FloatSlider(min=0.0, max=song_duration-clip_length, step=resolution, value=0.0, description='Seek:', continuous_update=False)
+  seek_w = widgets.FloatSlider(min=0.0, max=song_duration-clip_length, step=resolution, value=seek_init_value, description='Seek:', continuous_update=False)
 
   def update_seek(*args):
     seek_w.max = song_duration - clip_length_w.value 
@@ -271,7 +276,7 @@ def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration, clip_le
   v_layout = Layout(display='flex', flex_flow='column', justify_content='center', width='100%')
 
   ui = VBox([ HBox([resolution_w, clip_length_w], layout = h_layout), HBox([seek_w], layout = h_layout)], layout =v_layout)
-  animate_music_partial = functools.partial(animate_music, stereo_song_amp_aac=stereo_song_amp_aac, song_rate=song_rate)
+  animate_music_partial = functools.partial(animate_music, stereo_song_amp_aac=stereo_song_amp_aac, song_rate=song_rate, height_scale=height_scale)
   out = widgets.interactive_output(animate_music_partial, {'resolution': resolution_w, 'clip_length': clip_length_w, 'seek': seek_w})
 
   display(ui, out)
