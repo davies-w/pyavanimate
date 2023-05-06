@@ -155,13 +155,13 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   max_x =-1
   x_search_limit = 100
 
-  front_x = 10
+  front_x = 35
   for x in range(0, x_search_limit, 1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
       front_x = x + 1
       print(front_x)
       
-  back_x = -10
+  back_x = -5
   for x in range(max_x, (max_x - x_search_limit), -1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
       back_x = x - 1
