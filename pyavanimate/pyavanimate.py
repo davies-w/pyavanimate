@@ -146,6 +146,7 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   #start_time = 0
   fps=30
 
+  # MAKE N SINGLE_IMAGES, AT A 5-8 SECOND INTERVAL?
   total_num_frames = song_duration*fps
   start_time = time.time()
   im = make_single_image(start_time, song_amp_aac, song_rate, view_window_secs , width = plot_width, height = height, song_duration=song_duration, start_time_offset=start_time_offset)
@@ -281,30 +282,30 @@ def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration,
   display(ui, out)
 
 
-def test_slow_song():
-  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=0.2)
+def test_slow_song(time_per_note=0.2):
+  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=time_per_note)
   display_animation_slow([stereo_song_amp_aac], song_duration=song_duration, song_rate=song_rate, fps=30, time_window=0.25, width=10, height=2)
 
 
-def test_fast_song():
-  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=0.2)
+def test_fast_song(time_per_note=0.2):
+  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=time_per_note)
   display_animation_fast([stereo_song_amp_aac], song_rate)
 
 
-def test_fast_two_part_song():
-  stereo_song_amp_wav_1, stereo_song_amp_aac_1, song_rate, song_duration = make_test_song(pow(0.5,4), 0.75)
-  stereo_song_amp_wav_2, stereo_song_amp_aac_2, song_rate, song_duration = make_test_song(1.0, 0.25)
+def test_fast_two_part_song(time_per_note=1.0):
+  stereo_song_amp_wav_1, stereo_song_amp_aac_1, song_rate, song_duration = make_test_song(pow(0.5,4), 0.75, time_per_note=time_per_note)
+  stereo_song_amp_wav_2, stereo_song_amp_aac_2, song_rate, song_duration = make_test_song(1.0, 0.25, time_per_note=time_per_note)
   tracks = [stereo_song_amp_aac_1, stereo_song_amp_aac_2]
   display_animation_fast(tracks, song_rate)
 
 
-def test_interactive():
-  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=1)
+def test_interactive(time_per_note=1.0):
+  stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=time_per_note)
   make_ipywidget_player([stereo_song_amp_aac], song_rate, song_duration)  
 
 
-def test_interactive_two_part_song():
-  stereo_song_amp_wav_1, stereo_song_amp_aac_1, song_rate, song_duration = make_test_song(pow(0.5,4), 0.75)
-  stereo_song_amp_wav_2, stereo_song_amp_aac_2, song_rate, song_duration = make_test_song(1.0, 0.25)
+def test_interactive_two_part_song(time_per_note=1.0):
+  stereo_song_amp_wav_1, stereo_song_amp_aac_1, song_rate, song_duration = make_test_song(pow(0.5,4), 0.75,time_per_note=time_per_note)
+  stereo_song_amp_wav_2, stereo_song_amp_aac_2, song_rate, song_duration = make_test_song(1.0, 0.25, time_per_note=time_per_note)
   tracks = [stereo_song_amp_aac_1, stereo_song_amp_aac_2]
   make_ipywidget_player(tracks, song_rate, song_duration) 
