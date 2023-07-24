@@ -39,7 +39,7 @@ def showarray(a, fmt='png'):
 
 def generate_intervals(N, M, interval_size, clip_min=False, clip_max=False):
     start = round(math.ceil(N / interval_size) * interval_size, 2)
-    end = round(math.floor(M / interval_size) * interval_size, 2) 
+    end = round(math.floor(M / interval_size) * interval_size, 2)
     if clip_min and start == round(N,2):
      start += interval_size
     if clip_max and end == round(M,2):
@@ -55,7 +55,7 @@ def note(frequency, length, amplitude=1, sample_rate=22050):
     return data
 
 
-def make_single_image(current_time, stereo_song_amps, song_rate, time_window, width, height, song_duration = None, intervals=0.05, start_time_offset=0):
+def make_single_image(current_time, stereo_song_amps, song_rate, time_window, width, height, song_duration = None, intervals=0.05, start_time_offset=0, colors=['violet', 'dodgerblue'], markers=None):
 
     min_samples_x, max_samples_x = 0, 0
     x, y = [], []
@@ -70,6 +70,7 @@ def make_single_image(current_time, stereo_song_amps, song_rate, time_window, wi
       xlim_max = max_x+1*time_window    # where the left and right y-axis intercept
       xticks = generate_intervals(min_x, max_x, intervals, clip_min=True)
     else:
+      #print("not song duration")
       min_x = current_time
       max_x = current_time+time_window
       min_samples_x = int(min_x*song_rate)
@@ -77,7 +78,8 @@ def make_single_image(current_time, stereo_song_amps, song_rate, time_window, wi
       xlim_min = min_x
       xlim_max = max_x
       xticks = generate_intervals(min_x, max_x, intervals, clip_min=True, clip_max=True)
-   
+
+
     num_tracks = len(stereo_song_amps)
     #fig = plt.figure(figsize = (width, height*len(stereo_song_amps)))#, layout="constrained")
     fig, axs = plt.subplots(num_tracks, figsize = (width, height*num_tracks), layout="constrained") #, sharex=True)
@@ -87,6 +89,11 @@ def make_single_image(current_time, stereo_song_amps, song_rate, time_window, wi
       xticks = [x + start_time_offset for x in xticks]
       xlim_min += start_time_offset
       xlim_max += start_time_offset
+    # Here's the x-markers! # TODO(wdavies) : Add Vertical Markers.
+    #print((xlim_min, xlim_max))
+    
+    
+
 
     if num_tracks == 1:
       axs = [axs]
@@ -100,15 +107,26 @@ def make_single_image(current_time, stereo_song_amps, song_rate, time_window, wi
       axs[i].set_xlim(xlim_min, xlim_max)
       axs[i].set_ylim(-1, 1)
       axs[i].set_yticks([-1,0,1])
-   
+      #https://matplotlib.org/stable/gallery/color/named_colors.html
+      axs[i].set_prop_cycle(color=colors,
+                            linestyle=['-', ':'],
+                            lw=[0.25, 0.25])
+
       x = np.arange(min_samples_x, max_samples_x, 1)/song_rate    # x-array as a bunch of fractions of seconds.
       x += start_time_offset
       y = track[min_samples_x:max_samples_x]          # y array
       if (x.shape[0] != y.shape[0]):                  # make sure x and y are same length
-        x = np.resize(x, (y.shape[0],)) 
+        x = np.resize(x, (y.shape[0],))
+      axs[i].plot(x,y, linewidth=0.25)
 
-      axs[i].plot(x,y)
-    
+      start_line_width = len(markers[1])
+      yheight = 0 
+      if markers:
+        for m in markers[1]:
+          axs[i].vlines(x = [ mark['start'] for mark in markers[0][m] if mark['start'] >= xlim_min and mark['start'] <= xlim_max],   ymin = -1+yheight, ymax = 1, color = 'red',  linewidth=start_line_width)
+          start_line_width -= 1
+          yheight += 0.2
+
     plt.close()
     return mplfig_to_npimage(fig)
 
@@ -120,13 +138,13 @@ def display_animation_slow(song_amp_aac, song_duration, song_rate, fps, time_win
   frames = []
   for i in range(int(total_num_frames+1)):
     im = make_single_image(i/fps,
-                           song_amp_aac, 
-                           song_rate, 
-                           time_window, 
-                           width, 
+                           song_amp_aac,
+                           song_rate,
+                           time_window,
+                           width,
                            height)
     frames.append(im)
- 
+
   # *Have to* have FPS **and** Duration Array both set.
   animation = ImageSequenceClip(frames, fps=fps, durations=[1.0/fps]*total_num_frames)
   tracks = copy.deepcopy(song_amp_aac)
@@ -138,8 +156,8 @@ def display_animation_slow(song_amp_aac, song_duration, song_rate, fps, time_win
   display(animation.ipython_display(rd_kwargs=dict(logger=None, preset="ultrafast", fps=fps, audio_fps=song_rate)))
 
 
-def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_window_secs=0.25, view_port_inches=10, height=2, autoplay=-1):
-  
+def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_window_secs=0.25, view_port_inches=10, height=2, autoplay=-1, colors=['violet', 'dodgerblue'], markers=None):
+
   song_duration = int(len(song_amp_aac[0])/song_rate)
   plot_width = int(view_port_inches * song_duration/view_window_secs)
   #print (f"width={plot_width}")
@@ -149,7 +167,7 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   # MAKE N SINGLE_IMAGES, AT A 5-8 SECOND INTERVAL?
   total_num_frames = song_duration*fps
   start_time = time.time()
-  im = make_single_image(start_time, song_amp_aac, song_rate, view_window_secs , width = plot_width, height = height, song_duration=song_duration, start_time_offset=start_time_offset)
+  im = make_single_image(start_time, song_amp_aac, song_rate, view_window_secs , width = plot_width, height = height, song_duration=song_duration, start_time_offset=start_time_offset, colors=colors,markers=markers)
   #print(f"matplotlib {(time.time() - start_time) } seconds.")
   mid_y = 105 # Note this is y indexed such that 0 is top of image, max is bot.
             # thus 0 is close to the +1.0 image, and 120 or so is close to -1.0
@@ -160,7 +178,7 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   for x in range(0, x_search_limit, 1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
       front_x = x + 1
-      
+
   back_x = -5
   for x in range(max_x, (max_x - x_search_limit), -1):
     if np.array_equal(im[mid_y, x, :], np.array([0, 0, 0])):
@@ -172,10 +190,10 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
   #print(f"back_x {back_x}, {back.shape[1]}")
 
   #
-  #    We just need to move left 1/30th of a second each time, keeping the 0.25 
+  #    We just need to move left 1/30th of a second each time, keeping the 0.25
   #    potentially, we could even just keep adding and removing that 1/30th of a
   #    frame.
-  # 
+  #
   pixels_per_second = int(np.round((im.shape[1] - (front_x + abs(back_x))) / (song_duration + view_window_secs)))
   #print(f"pixels per second of song: {pixels_per_second}")
   pixels_per_viewport = int(np.round(pixels_per_second*view_window_secs))
@@ -193,10 +211,10 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
     #print(f"{frame_number} {frame.shape[1]} expected: {expected_width}")
     if frame.shape[1] != expected_width:
       middle = im[:,back_x-pixels_per_viewport+1:back_x+1,:]
-      frame = np.concatenate([front, middle, back], axis=1)   
+      frame = np.concatenate([front, middle, back], axis=1)
     #showarray(frame)
     frames.append(frame)
-  
+
   #print(f"framemaking {(time.time() - start_time) } seconds.")
   animation = ImageSequenceClip(frames, fps=fps, durations=[1.0/fps]*len(frames))
   #print(f"animation making {(time.time() - start_time) } seconds.")
@@ -213,7 +231,7 @@ def display_animation_fast(song_amp_aac, song_rate, start_time_offset=0, view_wi
     movie=animation.ipython_display(rd_kwargs=dict(logger=None, preset="veryfast", fps=fps, audio_fps=song_rate), autoplay = autoplay)
   #print(f"rendering {(time.time() - start_time) } seconds.")
   display(movie)
-  
+
 
 def make_test_note(frequency, length, amplitude=1, sample_rate=22050):
     time_points = np.linspace(0, length, int(length*sample_rate))
@@ -235,10 +253,10 @@ def make_test_song(freq_coef=1.0, amp_coef=1.0, time_per_note=1.0):
                make_test_note(freq_coef * 659, time_per_note, 0.5, song_rate),     #E .25
                make_test_note(freq_coef * 698, time_per_note, 0.4, song_rate),     #F .46
                make_test_note(freq_coef * 783, time_per_note, 0.3, song_rate),     #G .99
-             ),             
+             ),
              axis=-1)
-             
-  song_amp_aac = song_amp.reshape((song_amp.shape[0],1)) 
+
+  song_amp_aac = song_amp.reshape((song_amp.shape[0],1))
   #noise = np.random.normal(0, 0.005, song_amp_aac.shape)
   #song_amp_aac = song_amp_aac + noise
   stereo_song_amp_aac = np.concatenate([song_amp_aac, song_amp_aac],1) * amp_coef
@@ -249,26 +267,26 @@ def make_test_song(freq_coef=1.0, amp_coef=1.0, time_per_note=1.0):
   return stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration
 
 
-def animate_music(resolution, clip_length, seek, stereo_song_amp_aac, song_rate, height_scale):
+def animate_music(resolution, clip_length, seek, stereo_song_amp_aac, song_rate, height_scale, autoplay, colors=['violet', 'dodgerblue'], markers=None):
     s = []
     for track in stereo_song_amp_aac:
       s.append(track[round(seek*song_rate):round((seek + clip_length)*song_rate),:])
     try:
-      display_animation_fast(s, song_rate, view_window_secs=resolution, start_time_offset=seek, autoplay=True, height=2*height_scale)
+      display_animation_fast(s, song_rate, view_window_secs=resolution, start_time_offset=seek, autoplay=autoplay, height=2*height_scale, colors=colors, markers=markers)
     except:
       traceback.print_exc()
     return None
 
 
-def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration, 
-                          clip_length=5.0, resolution=0.25, max_resolution=1.0, seek_init_value=0.0, height_scale=1.0):
+def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration,
+                          clip_length=5.0, resolution=0.25, max_resolution=1.0, seek_init_value=0.0, height_scale=1.0, auto_play=-1, colors=['violet', 'dodgerblue'], markers=None):
 
   resolution_w = widgets.FloatSlider(min=0.05, max=max_resolution, step=max_resolution/20, value=resolution, description='Resolution:', continuous_update=False)
   clip_length_w = widgets.FloatSlider(min=1.0, max=song_duration, step=resolution, value=clip_length, description='Clip Length:', continuous_update=False)
   seek_w = widgets.FloatSlider(min=0.0, max=song_duration-clip_length, step=resolution, value=seek_init_value, description='Seek:', continuous_update=False)
 
   def update_seek(*args):
-    seek_w.max = song_duration - clip_length_w.value 
+    seek_w.max = song_duration - clip_length_w.value
   clip_length_w.observe(update_seek , 'value')
 
   seek_w.layout.width="80%"
@@ -276,7 +294,7 @@ def make_ipywidget_player(stereo_song_amp_aac, song_rate, song_duration,
   v_layout = Layout(display='flex', flex_flow='column', justify_content='center', width='100%')
 
   ui = VBox([ HBox([resolution_w, clip_length_w], layout = h_layout), HBox([seek_w], layout = h_layout)], layout =v_layout)
-  animate_music_partial = functools.partial(animate_music, stereo_song_amp_aac=stereo_song_amp_aac, song_rate=song_rate, height_scale=height_scale)
+  animate_music_partial = functools.partial(animate_music, stereo_song_amp_aac=stereo_song_amp_aac, song_rate=song_rate, height_scale=height_scale, autoplay=auto_play, colors=colors,markers=markers)
   out = widgets.interactive_output(animate_music_partial, {'resolution': resolution_w, 'clip_length': clip_length_w, 'seek': seek_w})
 
   display(ui, out)
@@ -301,11 +319,11 @@ def test_fast_two_part_song(time_per_note=1.0):
 
 def test_interactive(time_per_note=1.0):
   stereo_song_amp_wav, stereo_song_amp_aac, song_rate, song_duration = make_test_song(time_per_note=time_per_note)
-  make_ipywidget_player([stereo_song_amp_aac], song_rate, song_duration)  
+  make_ipywidget_player([stereo_song_amp_aac], song_rate, song_duration)
 
 
 def test_interactive_two_part_song(time_per_note=1.0):
   stereo_song_amp_wav_1, stereo_song_amp_aac_1, song_rate, song_duration = make_test_song(pow(0.5,4), 0.75,time_per_note=time_per_note)
   stereo_song_amp_wav_2, stereo_song_amp_aac_2, song_rate, song_duration = make_test_song(1.0, 0.25, time_per_note=time_per_note)
   tracks = [stereo_song_amp_aac_1, stereo_song_amp_aac_2]
-  make_ipywidget_player(tracks, song_rate, song_duration) 
+  make_ipywidget_player(tracks, song_rate, song_duration)
