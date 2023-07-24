@@ -33,7 +33,7 @@ setup(
         author='Winton Davies',
         author_email='wdavies@cs.stanford.edu',
         license='Apache License 2.0',
-        install_requires=["moviepy", "matplotlib", "numpy", "IPython", "PIL", "ipywidgets", "io", "math", "traceback", "functools", "time"],
+        install_requires=["moviepy", "matplotlib", "numpy", "IPython", "pillow", "ipywidgets", "io", "math", "traceback", "functools", "time"],
         packages=['pyavanimate'],
         zip_safe=True
     )
