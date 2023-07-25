@@ -25,5 +25,6 @@ from pyavanimate.pyavanimate import make_test_song
 from pyavanimate.pyavanimate import display_animation_fast
 from pyavanimate.pyavanimate import display_animation_slow
 from pyavanimate.pyavanimate import make_ipywidget_player
+from pyavanimate.pyavanimate import animate_music
 
 
