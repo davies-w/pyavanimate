@@ -119,13 +119,15 @@ def make_single_image(current_time, stereo_song_amps, song_rate, time_window, wi
         x = np.resize(x, (y.shape[0],))
       axs[i].plot(x,y, linewidth=0.25)
 
-      start_line_width = len(markers[1])
+
+      vlinecolors=['red','orange','blue','magenta', 'yellow']
       yheight = 0 
       if markers:
+        j = 0
         for m in markers[1]:
-          axs[i].vlines(x = [ mark['start'] for mark in markers[0][m] if mark['start'] >= xlim_min and mark['start'] <= xlim_max],   ymin = -1+yheight, ymax = 1, color = 'red',  linewidth=start_line_width)
-          start_line_width -= 1
+          axs[i].vlines(x = [ mark['start'] for mark in markers[0][m] if mark['start'] >= xlim_min and mark['start'] <= xlim_max], linestyles='solid',  ymin = -1+yheight, ymax = 1, color = vlinecolors[j],  linewidth=1)
           yheight += 0.2
+          j += 1
 
     plt.close()
     return mplfig_to_npimage(fig)
